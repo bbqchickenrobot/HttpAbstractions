@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Http.Extensions.Tests
         {
             var services = new ServiceCollection()
                 .AddScoped<ITestService, TestService>()
-                .AddTransient<ITypeActivator, TypeActivator>()
+                .AddTransient<IMiddlewareFactory, TestMiddlewareFactory>()
                 .BuildServiceProvider();
             var builder = new ApplicationBuilder(services);
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Http.Extensions.Tests
         {
             var services = new ServiceCollection()
                 .AddScoped<ITestService, TestService>()
-                .AddTransient<ITypeActivator, TypeActivator>()
+                .AddTransient<IMiddlewareFactory, TestMiddlewareFactory>()
                 .BuildServiceProvider();
             var builder = new ApplicationBuilder(services);
             builder.UseMiddleware<TestMiddleware>();
@@ -136,6 +136,14 @@ namespace Microsoft.AspNet.Http.Extensions.Tests
         public async Task Invoke(HttpContext context, ITestService testService)
         {
             context.Items[typeof(ITestService)] = testService;
+        }
+    }
+
+    public class TestMiddlewareFactory : IMiddlewareFactory
+    {
+        public object CreateInstance(IServiceProvider serviceProvider, Type middlewareType, object[] parameters)
+        {
+            return ActivatorUtilities.CreateInstance(serviceProvider, middlewareType, parameters);
         }
     }
 }
